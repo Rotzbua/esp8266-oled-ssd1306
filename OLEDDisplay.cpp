@@ -73,7 +73,7 @@ void OLEDDisplay::setColor(OLEDDISPLAY_COLOR color) {
 }
 
 void OLEDDisplay::setPixel(int16_t x, int16_t y) {
-  if (x >= 0 && x < 128 && y >= 0 && y < 64) {
+  if (x >= 0 && x < DISPLAY_WIDTH && y >= 0 && y < DISPLAY_HEIGHT) {
     switch (color) {
       case WHITE:   buffer[x + (y / 8) * DISPLAY_WIDTH] |=  (1 << (y & 7)); break;
       case BLACK:   buffer[x + (y / 8) * DISPLAY_WIDTH] &= ~(1 << (y & 7)); break;
@@ -668,27 +668,38 @@ size_t OLEDDisplay::write(const char* str) {
 void OLEDDisplay::sendInitCommands(void) {
   sendCommand(DISPLAYOFF);
   sendCommand(SETDISPLAYCLOCKDIV);
-  sendCommand(0xF0); // Increase speed of the display max ~96Hz
+  //sendCommand(0xF0); // Increase speed of the display max ~96Hz
+  sendCommand(0x80); // Increase speed of the display max ~96Hz
   sendCommand(SETMULTIPLEX);
-  sendCommand(0x3F);
+  sendCommand(0x2F);
   sendCommand(SETDISPLAYOFFSET);
-  sendCommand(0x00);
+  sendCommand(0);
   sendCommand(SETSTARTLINE);
   sendCommand(CHARGEPUMP);
   sendCommand(0x14);
   sendCommand(MEMORYMODE);
   sendCommand(0x00);
-  sendCommand(SEGREMAP);
-  sendCommand(COMSCANINC);
+  sendCommand(SEGREMAP|0x1);
+  sendCommand(COMSCANDEC);
   sendCommand(SETCOMPINS);
   sendCommand(0x12);
   sendCommand(SETCONTRAST);
   sendCommand(0xCF);
   sendCommand(SETPRECHARGE);
-  sendCommand(0xF1);
+  sendCommand(0x22);
   sendCommand(DISPLAYALLON_RESUME);
   sendCommand(NORMALDISPLAY);
   sendCommand(0x2e);            // stop scroll
+
+       sendCommand(COLUMNADDR);
+       sendCommand((0x80 - DISPLAY_WIDTH) / 2);
+       sendCommand(((0x80 - DISPLAY_WIDTH) / 2) + DISPLAY_WIDTH - 1);
+       
+       sendCommand(PAGEADDR);
+       sendCommand(0);
+       sendCommand((DISPLAY_HEIGHT/8)-1);
+
+
   sendCommand(DISPLAYON);
 }
 

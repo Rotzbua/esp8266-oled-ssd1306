@@ -44,9 +44,14 @@
 
 
 // Display settings
+
 #define DISPLAY_WIDTH 128
 #define DISPLAY_HEIGHT 64
 #define DISPLAY_BUFFER_SIZE 1024
+
+//#define DISPLAY_WIDTH 64
+//#define DISPLAY_HEIGHT 48
+//#define DISPLAY_BUFFER_SIZE 384
 
 // Header Values
 #define JUMPTABLE_BYTES 4

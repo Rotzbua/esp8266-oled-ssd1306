@@ -52,8 +52,8 @@ class SSD1306Wire : public OLEDDisplay {
       return true;
     }
 
-    void display(void) {
-      #ifdef OLEDDISPLAY_DOUBLE_BUFFER
+void display(void) {
+      #ifdef OLEDDISPLAY_DOUBLE_BUFFERa
         uint8_t minBoundY = ~0;
         uint8_t maxBoundY = 0;
 
@@ -112,26 +112,91 @@ class SSD1306Wire : public OLEDDisplay {
         }
       #else
 
-        sendCommand(COLUMNADDR);
-        sendCommand(0x0);
-        sendCommand(0x7F);
 
-        sendCommand(PAGEADDR);
-        sendCommand(0x0);
-        sendCommand(0x7);
+	for (uint8_t i=0; i<6; i++) {
+		setPageAddress(i);
+		setColumnAddress(0);
 
-        for (uint16_t i=0; i < DISPLAY_BUFFER_SIZE; i++) {
-          Wire.beginTransmission(this->_address);
-          Wire.write(0x40);
-          for (uint8_t x = 0; x < 16; x++) {
-            Wire.write(buffer[i]);
-            i++;
-          }
-          i--;
-          Wire.endTransmission();
-        }
+		//for (uint8_t j=0;j<0x40;j++) {
+		//	Wire.beginTransmission(_address);
+		//	Wire.write(0x40);
+		//	Wire.write( buffer[i*0x40+j]);
+		//	 yield();
+		//	Wire.endTransmission();
+		//}
+		
+		for (uint8_t j=0;j<0x40;j++) {
+			Wire.beginTransmission(_address);
+			Wire.write(0x40);
+			for (uint8_t k = 0 ; k<16; k++){
+				Wire.write( buffer[i*0x40+j]);
+				j++;
+			}
+			 yield();
+			Wire.endTransmission();
+		}
+	}
+	
+	
+	
+	    // We have to send the buffer as 16 bytes packets
+    // Our buffer is 1024 bytes long, 1024/16 = 64
+    // We have to send 64 packets
+//    for (uint8_t packet = 0; packet < 64; packet++) {
+//        i2c.start();
+//        i2c.write(0x40);
+//        for (uint8_t packet_byte = 0; packet_byte < 16; ++packet_byte) {
+//            i2c.write(buffer[packet*16+packet_byte]);
+//        }
+//        i2c.stop();
+//}
+
+        //sendCommand(COLUMNADDR);
+        //sendCommand(0x0);
+        //sendCommand(0x7F);
+
+        //sendCommand(PAGEADDR);
+        //sendCommand(0x0);
+        //sendCommand(0x7);
+
+        //sendCommand(COLUMNADDR);
+        //sendCommand(0x0);
+        //sendCommand(0x7F);
+
+        //sendCommand(PAGEADDR);
+        //sendCommand(0x0);
+        //sendCommand(0x7);
+        
+       //sendCommand(COLUMNADDR);
+       //sendCommand((0x80 - DISPLAY_WIDTH) / 2);
+       //sendCommand(((0x80 - DISPLAY_WIDTH) / 2) + DISPLAY_WIDTH - 1);
+       
+       //sendCommand(PAGEADDR);
+       //sendCommand(0);
+       //sendCommand((DISPLAY_HEIGHT/8)-1);
+       
+        //for (uint16_t i=0; i < DISPLAY_BUFFER_SIZE; i++) {
+        //  Wire.beginTransmission(this->_address);
+        //  Wire.write(0x40);
+        //  for (uint8_t x = 0; x < 16; x++) {
+        //    Wire.write(buffer[i]);
+        //    i++;
+        //  }
+        //  i--;
+        //  Wire.endTransmission();
+        //}
       #endif
-    }
+}
+
+void setPageAddress(uint8_t add) {
+	add=0xb0|add;
+	sendCommand(add);
+}
+
+void setColumnAddress(uint8_t add) {
+	sendCommand((0x10|(add>>4))+0x02);
+	sendCommand((0x0f&add));
+}
 
   private:
     inline void sendCommand(uint8_t command) __attribute__((always_inline)){
